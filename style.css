@@ -95,7 +95,7 @@ body {
 }
 
 .list__item {
-    display: block;
+    display: flex;
 }
 
 .list__item:hover{
@@ -117,10 +117,16 @@ body {
     position: relative;
 }
 
-.task_done {
+.task_done .task__name{
     text-decoration: line-through;
+}
+
+.task_done{
     color: lightgray;
 }
+
+
+
 
 .task__status {
     position: absolute;
@@ -176,6 +182,12 @@ body {
     visibility: visible;
 }
 
+.task__date {
+  font-size: 8px;
+  margin-right: 10px;
+}
+
+
 /*=====  End of TASK  ======*/
 
 
@@ -208,4 +220,3 @@ body {
 }
 
 /*=====  End of STATISTIC  ======*/
-

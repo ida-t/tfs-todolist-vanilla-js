@@ -17,29 +17,113 @@ var templateContainer = 'content' in templateElement ? templateElement.content :
 /**
  * @type {Array.<TodoItem>}
  */
+
+
 var todoList = [
     {
         name: 'Позвонить в сервис',
-        status: 'todo'
+        status: 'todo',
+        date: new Date(2011, 0, 2, 2, 3, 4, 567),
     },
     {
         name: 'Купить хлеб',
-        status: 'done'
+        status: 'done',
+        date: new Date(2016, 0, 8, 2, 6, 4, 567),
     },
     {
         name: 'Захватить мир',
-        status: 'todo'
+        status: 'todo',
+        date: new Date(2012, 0, 1, 2, 3, 7, 567),
     },
     {
         name: 'Добавить тудушку в список',
-        status: 'todo'
+        status: 'todo',
+        date: new Date(2013, 0, 5, 2, 3, 4, 567),
     }
 ];
+
+
+class Statistic {
+  constructor(done, todo, statisticDom) {
+    this.done = done;
+    this.todo = todo;
+
+    this.dom = statisticDom;
+  }
+
+  addToStats(isTodo) {
+    if (isTodo) {
+        this.todo++;
+    } else {
+        this.done++;
+    }
+
+    this.render();
+  }
+
+  changeStats(isTodo) {
+      if (isTodo) {
+          this.todo++;
+          this.done--;
+      } else {
+          this.todo--;
+          this.done++;
+      }
+      this.render();
+  }
+
+  deleteFromStats(isTodo) {
+      if (isTodo) {
+          this.todo--;
+      } else {
+          this.done--;
+      }
+
+      this.render();
+  }
+
+
+  render() {
+    this.dom.done.textContent = this.done;
+    this.dom.todo.textContent = this.todo;
+    this.dom.total.textContent = this.done + this.todo;
+  }
+
+}
+
+function formatDay(date) {
+  var dd = date.getDate();
+  if (dd < 10) dd = '0' + dd;
+
+  var mm = date.getMonth() + 1;
+  if (mm < 10) mm = '0' + mm;
+
+  var yy = date.getFullYear() % 100;
+  if (yy < 10) yy = '0' + yy;
+
+  return dd + '/' + mm + '/' + yy;
+}
+
+
+function formatTime(date) {
+  var hh = date.getHours();
+  if (hh < 10) hh = '0' + hh;
+
+  var mm = date.getMinutes();
+  if (mm < 10) mm = '0' + mm;
+
+  var ss = date.getSeconds();
+  if (ss < 10) ss = '0' + ss;
+
+  return hh + ':' + mm + ':' + ss;
+}
 
 // функция по генерации элементов
 function addTodoFromTemplate(todo) {
     var newElement = templateContainer.querySelector('.task').cloneNode(true);
     newElement.querySelector('.task__name').textContent = todo.name;
+    newElement.querySelector('.task__day').textContent = formatDay(todo.date);
+    newElement.querySelector('.task__time').textContent = formatTime(todo.date);
     setTodoStatusClassName(newElement, todo.status === 'todo');
 
     return newElement;
@@ -84,7 +168,8 @@ function checkIfTodoAlreadyExists(todoName) {
 function createNewTodo(name) {
     return {
         name: name,
-        status: 'todo'
+        status: 'todo',
+        date: new Date(),
     }
 }
 
@@ -113,121 +198,6 @@ var statsDonelElement = statsElement.querySelector('.statistic__done');
 var statsTodoElement = statsElement.querySelector('.statistic__left');
 var statsTotalElement = statsElement.querySelector('.statistic__total');
 
-// создадим функции работы со статистикой
-/**
- * отрисовывает статистику в DOM
- */
-function renderStats() {
-    statsDonelElement.textContent = stats.done;
-    statsTodoElement.textContent = stats.todo;
-    statsTotalElement.textContent = stats.done + stats.todo;
-}
-
-// теперь на каждое из действий — обновление статистики
-/**
- * добавляет значение к статистике и обновляет DOM
- * @param {boolean} isTodo — статус новой тудушки
- */
-function addToStats(isTodo) {
-    if (isTodo) {
-        stats.todo++;
-    } else {
-        stats.done++;
-    }
-    renderStats();
-}
-
-/**
- * измененяет статус тудушки и обновляет DOM
- * @param {boolean} isTodo статус после изменения
- */
-function changeStats(isTodo) {
-    if (isTodo) {
-        stats.todo++;
-        stats.done--;
-    } else {
-        stats.todo--;
-        stats.done++;
-    }
-    renderStats();
-}
-
-/**
- * отрабатывает удаление тудушки и обновляет DOM
- * @param {boolean} isTodo статус удаленной тудушки
- */
-function deleteFromStats(isTodo) {
-    if (isTodo) {
-        stats.todo--;
-    } else {
-        stats.done--;
-    }
-    renderStats();
-}
-
-// теперь надо переписать старые методы, чтобы учесть статистику
-
-// /**
-//  * вставляет тудушку и обновляет статистику
-//  * @param {TodoItem} todo
-//  */
-// function insertTodoElement(todo) {
-//     var elem = addTodoFromTemplate(todo);
-//     listElement.insertBefore(elem, listElement.firstElementChild);
-//     addToStats(todo.status === 'todo');
-// }
-
-// из-за изменений в insertTodoElement чуть упростили onInputKeydown
-
-// /**
-//  * отслеживает нажатие ENTER пользователем и создает новую тудушку, если такой нет
-//  * @param {KeyboardEvent} event
-//  */
-// function onInputKeydown(event) {
-//
-//     if (event.keyCode !== ENTER_KEYCODE) {
-//         return;
-//     }
-//
-//     var todoName = inputElement.value.trim();
-//
-//     if (todoName.length === 0 || checkIfTodoAlreadyExists(todoName)) {
-//         return;
-//     }
-//
-//     var todo = createNewTodo(todoName);
-//     insertTodoElement(todo);
-//     inputElement.value = '';
-// }
-
-// /**
-//  * изменяет статус тудушки, обновляет статистику
-//  * @param {Element} element
-//  */
-// function changeTodoStatus(element) {
-//     var isTodo = element.classList.contains('task_todo');
-//     setTodoStatusClassName(element, !isTodo);
-//
-//     changeStats(!isTodo);
-// }
-
-// /**
-//  * удаляет тудушку, обновляет статистику
-//  * @param {Element} element
-//  */
-// function deleteTodo(element) {
-//     var isTodo = element.classList.contains('task_todo');
-//     listElement.removeChild(element);
-//
-//     deleteFromStats(isTodo);
-// }
-
-/*==================================
- =            ФИЛЬТРАЦИЯ            =
- ==================================*/
-
-// изменим парадигму — теперь все изменения на тудушках сначала будут отражаться на todoList
-// и лишь потом отображаться в DOM
 
 // создадим enum с возможными вариантами фильтров
 var filterValues = {
@@ -369,7 +339,7 @@ function addTodo(name) {
     if (currentFilter !== filterValues.DONE) {
         insertTodoElement(newTask);
     }
-    addToStats(true);
+    statistic.addToStats(true);
 }
 
 // обновление статистики теперь не зависит от того, вставляется ли тудушка в DOM или нет
@@ -380,7 +350,6 @@ function addTodo(name) {
 function insertTodoElement(todo) {
     var elem = addTodoFromTemplate(todo);
     listElement.insertBefore(elem, listElement.firstElementChild);
-    // addToStats(todo.status === 'todo');
 }
 
 // обновим функцию смены статуса тудушки
@@ -405,7 +374,7 @@ function changeTodoStatus(element) {
     }
 
     // и поменять статистику
-    changeStats(!isTodo);
+    statistic.changeStats(!isTodo);
 }
 
 // аналогично при удалении — нужно удалять из todoList
@@ -418,7 +387,7 @@ function deleteTodo(element) {
     var isTodo = task.status === 'todo';
     todoList.splice(todoList.indexOf(task), 1);
     listElement.removeChild(element);
-    deleteFromStats(isTodo);
+    statistic.deleteFromStats(isTodo);
 }
 
 // отрендерим первоначальный список тудушек
@@ -430,8 +399,11 @@ var tasksDone = todoList.filter(function (item) {
     return item.status === 'done';
 }).length;
 
-stats = {
-    done: tasksDone,
-    todo: todoList.length - tasksDone
-};
-renderStats();
+
+var statistic = new Statistic(tasksDone, todoList.length - tasksDone,{
+  done: statsDonelElement,
+  todo: statsTodoElement,
+  total: statsTotalElement,
+});
+
+statistic.render();
